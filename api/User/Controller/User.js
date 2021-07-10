@@ -4,7 +4,6 @@ module.exports = {
     createUser: (req, res, next) => {
         // console.log('Req', req.body)
         userModel.create({
-            Id: req.body.id,
             name: req.body.name,
             address: req.body.address,
             dob: req.body.dob,
