@@ -6,8 +6,11 @@ const app = express()
 const jwt = require("jsonwebtoken")
 const users = require('./routes/user.routes');
 const validateUser = require('./middleware')
+
+
+app.use(express.json())
 app.use(cors())
-// app.use(express.json())
+
 
 const { JWT_SECRET } = process.env
 
@@ -21,7 +24,7 @@ app.use('/users', users);
 
 
 app.get('/', function (req, res) {
-    res.json({ "Message": "Welcome" });
+    res.json({ status: "success", message: "Welcome!", data: null })
 });
 
 // handle errors

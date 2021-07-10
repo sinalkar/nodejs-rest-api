@@ -2,17 +2,18 @@ const userModel = require('../Model/User')
 
 module.exports = {
     createUser: (req, res, next) => {
+        // console.log('Req', req.body)
         userModel.create({
-            Id: req.body.Id,
+            Id: req.body.id,
             name: req.body.name,
             address: req.body.address,
             dob: req.body.dob,
             state: req.body.state
         }, (err, result) => {
             if (err)
-                res.json({ status: "failure", message: "Something went wrong", data: null })
+                res.json({ status: "failure", message: "Something went wrong", data: null, err: err.message })
             else
-                res.json({ status: "success", message: "User added successfully!!!", data: null })
+                res.json({ status: "success", message: "User added successfully!!!", data: result })
 
         })
     },
@@ -24,6 +25,7 @@ module.exports = {
             } else {
                 for (let userItem of users) {
                     userList.push({
+                        _id: userItem._id,
                         Id: userItem.Id,
                         name: userItem.name,
                         address: userItem.address,
@@ -37,30 +39,42 @@ module.exports = {
         })
     },
     findUserById: (req, res, next) => {
-        console.log(req.body)
-        userModel.findById(req.params.Id, (err, foundUser) => {
+        console.log(req.params)
+        const Id = parseInt(req.params.id)
+        userModel.findOne({ Id: Id }, (err, foundUser) => {
             if (err) {
-                res.json({ status: "failure", message: "Something went wrong", data: null })
+                res.json({ status: "failure", message: "Something went wrong", data: null, err: err.message })
             } else {
                 res.json({ status: "success", message: "User found!", data: { users: foundUser } })
             }
         })
     },
     updateUserById: (req, res, next) => {
-        userModel.findByIdAndUpdate(req.params.Id, { name: req.body.name }, (err, foundUser) => {
+        const Id = parseInt(req.params.id)
+        const updateFields = { name: req.body.name, address: req.body.address, dob: req.body.dob, state: req.body.state }
+        userModel.findOneAndUpdate({ Id: Id }, { name: req.body.name, address: req.body.address, dob: req.body.dob, state: req.body.state }, (err, foundUser) => {
             if (err)
-                res.json({ status: "failure", message: "Something went wrong", data: null })
+                res.json({ status: "failure", message: "Something went wrong", data: null, err: err.message })
             else {
-                res.json({ status: "success", message: "User Detail Updated updated successfully!!!", data: { users: foundUser } })
+                if (foundUser) {
+                    res.json({ status: "success", message: "User Detail Updated updated successfully!!!", data: { users: { Id: foundUser.Id, ...updateFields } } })
+                } else {
+                    res.json({ status: "failure", message: "User not found!", data: null })
+                }
             }
         })
     },
     deleteUserById: function (req, res, next) {
-        userModel.findByIdAndRemove(req.params.Id, (err, foundUser) => {
+        const Id = parseInt(req.params.id)
+        userModel.findOneAndDelete({ Id: Id }, (err, foundUser) => {
             if (err)
                 res.json({ status: "failure", message: "Something went wrong", data: null })
             else {
-                res.json({ status: "success", message: "User deleted successfully!", data: { users: foundUser } })
+                if (foundUser) {
+                    res.json({ status: "success", message: "User deleted successfully!", data: { users: foundUser } })
+                } else {
+                    res.json({ status: "failure", message: "User not found!", data: null })
+                }
             }
         })
     }
