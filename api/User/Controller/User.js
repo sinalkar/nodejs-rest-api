@@ -1,19 +1,26 @@
 const userModel = require('../Model/User')
+const moment = require('moment')
 
 module.exports = {
     createUser: (req, res, next) => {
         // console.log('Req', req.body)
-        userModel.create({
+
+        const createUserObject = {
             name: req.body.name,
             address: req.body.address,
             dob: req.body.dob,
             state: req.body.state
-        }, (err, result) => {
-            if (err)
+        }
+        userModel.create(createUserObject, (err, result) => {
+            if (err) {
                 res.json({ status: "failure", message: "Something went wrong", data: null, err: err.message })
-            else
-                res.json({ status: "success", message: "User added successfully!!!", data: result })
-
+            }
+            else {
+                const userItem = { ...result._doc }
+                userItem.dob = moment(userItem.dob).format('YYYY-MM-DD')
+                console.log(userItem)
+                res.json({ status: "success", message: "User added successfully!!!", data: userItem })
+            }
         })
     },
     getAllUsers: (req, res, next) => {
@@ -24,11 +31,10 @@ module.exports = {
             } else {
                 for (let userItem of users) {
                     userList.push({
-                        _id: userItem._id,
                         Id: userItem.Id,
                         name: userItem.name,
                         address: userItem.address,
-                        dob: userItem.dob,
+                        dob: moment(userItem.dob).format('YYYY-MM-DD'),
                         state: userItem.state,
                         createdAt: userItem.createdAt
                     })
@@ -44,7 +50,10 @@ module.exports = {
             if (err) {
                 res.json({ status: "failure", message: "Something went wrong", data: null, err: err.message })
             } else {
-                res.json({ status: "success", message: "User found!", data: { users: foundUser } })
+                const { Id, name, address, dob, state, createdAt } = foundUser._doc
+                const dobm = moment(dob).format('YYYY-MM-DD')
+
+                res.json({ status: "success", message: "User found!", data: { users: { Id, name, address, dob: dobm, state, createdAt } } })
             }
         })
     },
