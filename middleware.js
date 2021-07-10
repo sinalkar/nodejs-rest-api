@@ -1,9 +1,8 @@
 const jwt = require("jsonwebtoken")
 const validateUser = (req, res, next) => {
-    jwt.verify(req.headers['authentication'], req.app.get('secretKey'), function (err, decoded) {
+    jwt.verify(req.headers['authorization'], req.app.get('JWT_SECRET'), function (err, decoded) {
         if (err) {
-            // res.json({ status: "error", message: err.message, data: null });
-            next();
+            res.status(401).json({ status: "failure", message: "Session is expire please login!", err: err.message })
         } else {
             // add user id to request
             req.body.userName = decoded.usrNm;
